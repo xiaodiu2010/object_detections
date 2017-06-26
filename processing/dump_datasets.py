@@ -1,4 +1,3 @@
-
 import numpy as np
 from tensorpack import *
 import scipy.io as sio
@@ -7,6 +6,7 @@ import os
 import cv2
 import os.path
 import lmdb
+import argparse
 np.show_config()
 
 
@@ -21,14 +21,12 @@ class RawSythtext(DataFlow):
         self.imglist = meta[self.imcell][0]
         self.texts = meta[self.textname][0]
         self.wordBB = meta[self.wordname][0]
-        self.charBB = meta[self.charname][0]
+        self.charBB = meta[self.charname][0] 
         # we apply a global shuffling here because later we'll only use local shuffling
         #np.random.shuffle(self.imglist)
-        pattern = re.compile(r'^{}\/'.format(1))
-        self.res =[k for k in range(self.imglist.shape[0]) if pattern.match(self.imglist[k][0]) != None ]
         self.dir = path_to_data
     def get_data(self):
-        for i in self.res:
+        for i in range(len(self.imglist)):
             fname = os.path.join(self.dir, self.imglist[i][0])
             wordbb= self.wordBB[i]
             texts = self.texts[i]
@@ -39,7 +37,7 @@ class RawSythtext(DataFlow):
             bbox, label = _processing_image(wordbb,jpeg)
             yield [jpeg, label, bbox, texts, charbb]              
     def size(self):
-        return len(self.res)
+        return len(self.imglist)
 
 def _processing_image(wordbb,jpeg):
     shape = cv2.imdecode(jpeg, 1).shape
@@ -63,6 +61,21 @@ def _processing_image(wordbb,jpeg):
 
     label = np.ones([numofbox], dtype=np.int32)
     return bbox, label
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--path_to_sythtext', help='path to sythtext data')
+
+	args = parser.parse_args()
+
+
+
+
+
+
+
+
+
 
 
 
